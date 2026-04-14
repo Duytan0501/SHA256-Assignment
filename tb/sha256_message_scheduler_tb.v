@@ -1,4 +1,4 @@
-module tb_message_scheduler;
+module sha256_message_scheduler_tb;
 
     reg clk;
     reg rst_n;
