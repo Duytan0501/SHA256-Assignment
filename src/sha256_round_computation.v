@@ -47,6 +47,7 @@ module sha256_round_computation (
       .addr(round_index),
       .get_k_constant(Kt)
   );
+
   sha256_functions funcs1 (
       .inp_data_1(e),
       .inp_data_2(f),
@@ -87,6 +88,7 @@ module sha256_round_computation (
       hash <= 256'd0;
       rounds_done <= 0;
     end else begin
+
         PS <= NS;  // Update state
 
         case (PS)
@@ -121,7 +123,10 @@ module sha256_round_computation (
   always @(*) begin
     NS = PS;  // Default assignment to prevent latches
     case (PS) 
-      IDLE: NS = (done) ? ROUNDS : IDLE;
+        IDLE: 
+            begin 
+                NS = (done) ? ROUNDS : IDLE;
+            end
       ROUNDS: if (round_index >= 64) NS = FINAL; // nhay toi final state
       FINAL: NS = IDLE; 
       default: NS = IDLE;
