@@ -14,7 +14,6 @@ module sha256_round_computation (
   localparam IDLE = 2'd0;
   localparam ROUNDS = 2'd1;
   localparam FINAL = 2'd2;
-  localparam HOLD = 2'd3;
 
 
   reg [1:0] PS, NS;
@@ -40,30 +39,36 @@ module sha256_round_computation (
       .rst_n(rst_n),
       .trigger(done),
       .block(message_block),
-      .W_data(Wt)
+      .W_data(Wt),
+      .schedule_done()
   );
-
-
   // Instantiate constant and function modules
   sha256_constants constants (
       .addr(round_index),
       .get_k_constant(Kt)
   );
-
   sha256_functions funcs1 (
       .inp_data_1(e),
       .inp_data_2(f),
       .inp_data_3(g),
       .choice_func(choice),
-      .sigma_upper_1(sigma_upper_1)
+      .majority_func(),
+      .sigma_upper_0(),
+      .sigma_upper_1(sigma_upper_1),
+      .sigma_lower_0(),
+      .sigma_lower_1()
   );
 
   sha256_functions funcs2 (
       .inp_data_1(a),
       .inp_data_2(b),
       .inp_data_3(c),
+      .choice_func(),
       .majority_func(major),
-      .sigma_upper_0(sigma_upper_0)
+      .sigma_upper_0(sigma_upper_0),
+      .sigma_upper_1(),
+      .sigma_lower_0(),
+      .sigma_lower_1()
   );
 
 
@@ -74,7 +79,6 @@ module sha256_round_computation (
 
   // Sequential Logic: State Transition and Register Updates
   always @(posedge clk or negedge rst_n) begin
-
     if (!rst_n) begin
       // Reset everything
       a <= H0;
@@ -90,47 +94,51 @@ module sha256_round_computation (
       hash <= 256'd0;
       rounds_done <= 0;
     end else begin
-
         PS <= NS;  // Update state
-
         case (PS)
-           ROUNDS: 
-             if (round_index < 64) begin
-              a <= T1 + T2;
-              b <= a;
-              c <= b;
-              d <= c;
-              e <= d + T1;
-              f <= e;
-              g <= f;
-              h <= g;
-              round_index <= round_index + 1;
+          IDLE: begin
+            rounds_done<=0;
+              a <= H0;
+              b <= H1;
+              c <= H2;
+              d <= H3;
+              e <= H4;
+              f <= H5;
+              g <= H6;
+              h <= H7;
+          end
+           ROUNDS: begin
+              if (round_index < 64) begin
+                a <= T1 + T2;
+                b <= a;
+                c <= b;
+                d <= c;
+                e <= d + T1;
+                f <= e;
+                g <= f;
+                h <= g;
+                round_index <= round_index + 1;
+              end
             end
-
             FINAL: 
-                begin
-                  hash <= {H0 + a, H1 + b, H2 + c, H3 + d, H4 + e, H5 + f, H6 + g, H7 + h};
-                  rounds_done <= 1;
-                  // Reset round_index
-                  round_index <= 6'd0;
-                end
-
+              begin
+                hash <= {H0 + a, H1 + b, H2 + c, H3 + d, H4 + e, H5 + f, H6 + g, H7 + h};
+                rounds_done <= 1;
+                // Reset round_index
+                round_index <= 6'd0;
+              end
             default: ;
-        endcase
-    end
-  end
-
-
+          endcase
+        end
+      end
   // Combinational Logic: Next State Logic
   always @(*) begin
     NS = PS;  // Default assignment to prevent latches
     case (PS) 
-        IDLE: NS = ROUNDS;
-      ROUNDS: if (round_index == 63) NS = FINAL; // nhay toi final state
-      FINAL: NS = HOLD; 
-        HOLD: NS = HOLD;
+        IDLE: if(done) NS = ROUNDS;
+        ROUNDS: if (round_index == 63) NS = FINAL; // nhay toi final state
+        FINAL: NS = IDLE; 
       default: NS = IDLE;
     endcase
   end
-
 endmodule

@@ -3,7 +3,7 @@ module sha256_message_scheduler (
     input              rst_n,
     input              trigger,       // trigger signal to indicate padding trigger
     input      [511:0] block,         // 512-bit input message block
-    output reg [ 31:0] W_data,        // Output a single 32-bit word at a time
+    output wire [ 31:0] W_data,        // Output a single 32-bit word at a time
     output reg         schedule_done
 );
 
@@ -32,7 +32,6 @@ module sha256_message_scheduler (
   always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       for (i = 0; i < 64; i = i + 1) W_temp[i] <= 32'd0;
-      W_data <= 32'd0;
       round <= 7'd0;
       busy <= 1'b0;
       schedule_done <= 1'b0;
@@ -47,7 +46,6 @@ module sha256_message_scheduler (
         if (round <= 15) begin
           // 16 từ đầu: lấy trực tiếp từ block
           W_temp[round] <= block[511-(round*32)-:32];
-          W_data <= block[511-(round*32)-:32];
           round <= round + 1;
         end else if (round <= 63) begin
           // Tính W_temp[round] từ các từ trước
@@ -56,15 +54,8 @@ module sha256_message_scheduler (
           ) + W_temp[round-7] + sigma_lower_1(
               W_temp[round-2]
           );
-
-          W_data <= W_temp[round-16] + sigma_lower_0(
-              W_temp[round-15]
-          ) + W_temp[round-7] + sigma_lower_1(
-              W_temp[round-2]
-          );
           // xem lai
           round <= round + 1;
-
           if (round == 63)
              begin
               // Hoàn thành
@@ -75,6 +66,9 @@ module sha256_message_scheduler (
       end
     end
   end
+  assign W_data = (round < 16) ? block[511-(round*32)-:32] : 
+                  (W_temp[round-16] + sigma_lower_0(W_temp[round-15]) 
+                  + W_temp[round-7] + sigma_lower_1(W_temp[round-2]));
 endmodule
 
 

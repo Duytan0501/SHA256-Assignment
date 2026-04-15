@@ -28,12 +28,13 @@ module sha256_message_padding (
     end else begin
       curr <= next;
       case (curr)
-        IDLE:  //Trang thai cho
-        if (input_start) begin
-          padded_msg <= 512'b0;
+        IDLE: begin //Trang thai cho
           padding_done <= 0;
-          write_ptr <= 6'd0;
-          msg_length <= 64'd0;
+          if (input_start) begin
+            padded_msg <= 512'b0;
+            write_ptr <= 6'd0;
+            msg_length <= 64'd0;
+          end
         end
         PROCESSING:  //Trang thai xu ly
         if (!input_done && write_ptr < 6'd55) begin  //Neu chua nap du input
