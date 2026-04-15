@@ -62,7 +62,7 @@ module sha256_message_scheduler (
           ) + W_temp[round-7] + sigma_lower_1(
               W_temp[round-2]
           );
-          // xem lai logic cho nay thu dung k 
+          // xem lai
           round <= round + 1;
         end else begin
           // Hoàn thành

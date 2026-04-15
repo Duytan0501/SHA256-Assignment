@@ -71,7 +71,7 @@ module sha256_round_computation (
 
 
   // Sequential Logic: State Transition and Register Updates
-  always @(posedge clk or posedge rst_n) begin
+  always @(posedge clk or negedge rst_n) begin
 
     if (rst_n) begin
       // Reset everything
