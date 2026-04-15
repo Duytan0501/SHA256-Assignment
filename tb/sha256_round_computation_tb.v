@@ -1,4 +1,4 @@
-module sha256_round_computation;
+module sha256_round_computation_tb;
 
   // Inputs
   reg clk;
@@ -96,7 +96,7 @@ module sha256_round_computation;
   // Dump waves
   initial begin
     $dumpfile("sha256.vcd");
-    $dumpvars(0, sha256_round_computation);
+    $dumpvars(0, sha256_round_computation_tb);
   end
 
 endmodule
