@@ -64,12 +64,18 @@ module sha256_message_scheduler (
           );
           // xem lai
           round <= round + 1;
-        end else begin
-          // Hoàn thành
-          busy <= 1'b0;
-          schedule_done <= 1'b1;
+
+          if (round == 63)
+             begin
+              // Hoàn thành
+              busy <= 1'b0;
+              schedule_done <= 1'b1;
+            end
         end
       end
     end
   end
 endmodule
+
+
+

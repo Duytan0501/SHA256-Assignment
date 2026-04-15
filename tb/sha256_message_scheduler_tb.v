@@ -72,7 +72,7 @@ module sha256_message_scheduler_tb;
     #10;
     $display("\n=== Message Schedule Results ===");
     for (i = 0; i < 64; i = i + 1) begin
-      $display("W[%0d] = %h", i, uut.W_temp[i]);
+      $display(" W[%0d] = %h", i, uut.W_temp[i]);
     end
 
     #50 $finish;

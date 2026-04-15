@@ -14,6 +14,8 @@ module sha256_round_computation (
   localparam IDLE = 2'd0;
   localparam ROUNDS = 2'd1;
   localparam FINAL = 2'd2;
+  localparam HOLD = 2'd3;
+
 
   reg [1:0] PS, NS;
 
@@ -73,7 +75,7 @@ module sha256_round_computation (
   // Sequential Logic: State Transition and Register Updates
   always @(posedge clk or negedge rst_n) begin
 
-    if (rst_n) begin
+    if (!rst_n) begin
       // Reset everything
       a <= H0;
       b <= H1;
@@ -123,12 +125,10 @@ module sha256_round_computation (
   always @(*) begin
     NS = PS;  // Default assignment to prevent latches
     case (PS) 
-        IDLE: 
-            begin 
-                NS = (done) ? ROUNDS : IDLE;
-            end
-      ROUNDS: if (round_index >= 64) NS = FINAL; // nhay toi final state
-      FINAL: NS = IDLE; 
+        IDLE: NS = ROUNDS;
+      ROUNDS: if (round_index == 63) NS = FINAL; // nhay toi final state
+      FINAL: NS = HOLD; 
+        HOLD: NS = HOLD;
       default: NS = IDLE;
     endcase
   end
