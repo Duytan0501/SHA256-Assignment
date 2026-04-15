@@ -6,7 +6,7 @@ module sha256_functions (
 );
   
   // Choice: (e & f) ^ (~e & g)
-  assign choice_func = (inp_data_2 & inp_data_3) ^ (~inp_data_2 & inp_data_1);
+  assign choice_func = (inp_data_1 & inp_data_2) ^ (~inp_data_1 & inp_data_3);
   // Note: cần kiểm tra lại mapping! Thường choice(e,f,g): e=inp_data_2, f=inp_data_3, g=?
   
   // Majority: (a & b) ^ (a & c) ^ (b & c)
@@ -18,9 +18,9 @@ module sha256_functions (
                          {inp_data_1[21:0], inp_data_1[31:22]};
   
   // Sigma upper 1 (Σ1): dùng cho e (ROTR 6, 11, 25)
-  assign sigma_upper_1 = {inp_data_2[5:0], inp_data_2[31:6]} ^ 
-                         {inp_data_2[10:0], inp_data_2[31:11]} ^ 
-                         {inp_data_2[24:0], inp_data_2[31:25]};
+  assign sigma_upper_1 = {inp_data_1[5:0], inp_data_1[31:6]} ^ 
+                         {inp_data_1[10:0], inp_data_1[31:11]} ^ 
+                         {inp_data_1[24:0], inp_data_1[31:25]};
   
   // Sigma lower 0 (σ0): ROTR 7, 18, SHR 3
   assign sigma_lower_0 = {inp_data_1[6:0], inp_data_1[31:7]} ^ 
@@ -28,8 +28,8 @@ module sha256_functions (
                          (inp_data_1 >> 3);
   
   // Sigma lower 1 (σ1): ROTR 17, 19, SHR 10
-  assign sigma_lower_1 = {inp_data_2[16:0], inp_data_2[31:17]} ^ 
-                         {inp_data_2[18:0], inp_data_2[31:19]} ^ 
-                         (inp_data_2 >> 10);
+  assign sigma_lower_1 = {inp_data_1[16:0], inp_data_1[31:17]} ^ 
+                         {inp_data_1[18:0], inp_data_1[31:19]} ^ 
+                         (inp_data_1 >> 10);
   
 endmodule

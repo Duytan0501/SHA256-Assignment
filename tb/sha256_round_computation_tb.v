@@ -34,14 +34,15 @@ module sha256_round_computation_tb;
   initial begin
     // Init
     clk = 0;
-    rst_n = 0;
+    rst_n = 1;
     done = 0;
     message_block = 512'd0;
     
     // Reset
     #20;
-    rst_n = 1;
+    rst_n = 0;
     #10;
+    rst_n = 1;
     
     // Test 1: "abc"
     $display("\n========== TEST 1: Hashing 'abc' ==========");
@@ -49,6 +50,8 @@ module sha256_round_computation_tb;
     done = 1;
     #10;
     done = 0;
+
+    $display("%0d    : ", dut.round_index);
     
     wait(rounds_done == 1);
     #10;
@@ -69,7 +72,7 @@ module sha256_round_computation_tb;
     done = 1;
     #10;
     done = 0;
-    
+   
     wait(rounds_done == 1);
     #10;
     
