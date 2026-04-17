@@ -3,7 +3,7 @@ module sha256_message_scheduler (
     input              rst_n,
     input              trigger,       // trigger signal to indicate padding trigger
     input      [511:0] block,         // 512-bit input message block
-    output wire [ 31:0] W_data,        // Output a single 32-bit word at a time
+    output [ 31:0] W_data,        // Output a single 32-bit word at a time
     output reg         schedule_done
 );
 
@@ -42,6 +42,8 @@ module sha256_message_scheduler (
         schedule_done <= 1'b0;
       end
 
+
+      // leducnhan toi uu bang pipeline method 
       if (busy) begin
         if (round <= 15) begin
           // 16 từ đầu: lấy trực tiếp từ block
