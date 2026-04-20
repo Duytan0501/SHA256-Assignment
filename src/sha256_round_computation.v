@@ -15,7 +15,6 @@ module sha256_round_computation (
   localparam ROUNDS = 2'd1;
   localparam FINAL = 2'd2;
 
-
   reg [1:0] PS, NS;
 
   // Initial hash values
@@ -42,11 +41,13 @@ module sha256_round_computation (
       .W_data(Wt),
       .schedule_done()
   );
+
   // Instantiate constant and function modules
   sha256_constants constants (
       .addr(round_index),
       .get_k_constant(Kt)
   );
+
   sha256_functions funcs1 (
       .inp_data_1(e),
       .inp_data_2(f),
@@ -131,6 +132,8 @@ module sha256_round_computation (
           endcase
         end
       end
+
+
   // Combinational Logic: Next State Logic
   always @(*) begin
     NS = PS;  // Default assignment to prevent latches
@@ -141,4 +144,5 @@ module sha256_round_computation (
       default: NS = IDLE;
     endcase
   end
+
 endmodule
