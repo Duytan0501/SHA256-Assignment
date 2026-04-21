@@ -24,17 +24,12 @@ module sha256_round_scheduler_include (
     
     // ========== HASH STATE (8 registers) ==========
     reg [31:0] a, b, c, d, e, f, g, h;
-<<<<<<< HEAD
-    // register a, b, c -> h (old) 
-=======
->>>>>>> 134c46cdf883fd65b9325f518ec8954a111f359e
     reg [31:0] a_old, b_old, c_old, d_old, e_old, f_old, g_old, h_old;
     
     // ========== MESSAGE SCHEDULING ==========
     reg [31:0] W [0:63];
     // W_pipe tinh truoc gia tri cho W[data]
     reg [31:0] W_pipe1, W_pipe2;
-<<<<<<< HEAD
     
     // ========== CONSTANTS ==========
     (* ramstyle = "M9K" *) reg [31:0] K [0:63];
@@ -100,21 +95,7 @@ module sha256_round_scheduler_include (
             sigma_upper_1 = {x[5:0], x[31:6]} ^ {x[10:0], x[31:11]} ^ {x[24:0], x[31:25]};
         end
     endfunction
-=======
-    reg [5:0] round_use;
-    
-    // ========== CONSTANTS (giữ nguyên) ==========
-    (* ramstyle = "M9K" *) reg [31:0] K [0:63];
-    initial begin
-        // ... (64 giá trị K như cũ)
-        K[0] = 32'h428a2f98; K[1] = 32'h71374491; // ... đầy đủ
-        K[63]= 32'hc67178f2;
-    end
-    
-    // ========== HÀM LOGIC (sigma, ch, maj) ==========
-    // ... (giữ nguyên các function từ code trước)
-    // chua co function, can cap nhat
->>>>>>> 134c46cdf883fd65b9325f518ec8954a111f359e
+
     
     // ========== FSM: NEXT STATE ==========
     always @(*) begin
@@ -160,44 +141,6 @@ module sha256_round_scheduler_include (
                 end
                 
                 LOAD_IV: begin
-<<<<<<< HEAD
-    round <= 0;
-    ready_for_next_block <= 0;
-    
-    if (current_hash == 256'h0) begin
-        a <= 32'h6a09e667;
-        b <= 32'hbb67ae85;
-        c <= 32'h3c6ef372;
-                            d <= 32'ha54ff53a;
-                            e <= 32'h510e527f;
-                            f <= 32'h9b05688c;
-                            g <= 32'h1f83d9ab;
-                            h <= 32'h5be0cd19;
-                        end else begin
-                            {a, b, c, d, e, f, g, h} <= current_hash;
-                        end
-                        
-                        {a_old, b_old, c_old, d_old, e_old, f_old, g_old, h_old} <= 
-                            {a, b, c, d, e, f, g, h};
-                        
-                        // THAY THẾ vòng lặp for bằng 16 dòng gán riêng
-                        W[0] <= message_block[511:480];
-                        W[1] <= message_block[479:448];
-                        W[2] <= message_block[447:416];
-                        W[3] <= message_block[415:384];
-                        W[4] <= message_block[383:352];
-                        W[5] <= message_block[351:320];
-                        W[6] <= message_block[319:288];
-                        W[7] <= message_block[287:256];
-                        W[8] <= message_block[255:224];
-                        W[9] <= message_block[223:192];
-                        W[10] <= message_block[191:160];
-                        W[11] <= message_block[159:128];
-                        W[12] <= message_block[127:96];
-                        W[13] <= message_block[95:64];
-                        W[14] <= message_block[63:32];
-                        W[15] <= message_block[31:0];
-=======
                     round <= 0;
                     ready_for_next_block <= 0;
                     
@@ -226,7 +169,6 @@ module sha256_round_scheduler_include (
                     for (int i = 0; i < 16; i++) begin
                         W[i] <= message_block[511 - 32*i -: 32];
                     end
->>>>>>> 134c46cdf883fd65b9325f518ec8954a111f359e
                 end
                 
                 RUN_ROUNDS: begin
@@ -234,10 +176,6 @@ module sha256_round_scheduler_include (
                 end
                 
                 UPDATE_HASH: begin
-<<<<<<< HEAD
-=======
-                    // Cộng dồn: new_hash = old_hash + state_after_rounds
->>>>>>> 134c46cdf883fd65b9325f518ec8954a111f359e
                     current_hash <= {a_old, b_old, c_old, d_old, e_old, f_old, g_old, h_old}
                                    + {a, b, c, d, e, f, g, h};
                     
@@ -256,32 +194,11 @@ module sha256_round_scheduler_include (
                     hash_valid <= 0;
                 end
             endcase
-<<<<<<< HEAD
-        end
-    end
-    
-    // ========== MESSAGE SCHEDULING ==========
-    always @(posedge clk) begin
-        if (state == RUN_ROUNDS) begin
-            if (round >= 16 && round <= 63) begin
-                W_pipe1 <= W[round-16] + sigma_lower_0(W[round-15]);
-                W_pipe2 <= W[round-7]  + sigma_lower_1(W[round-2]);
-            end
-=======
->>>>>>> 134c46cdf883fd65b9325f518ec8954a111f359e
         end
     end
     
     // ========== MESSAGE SCHEDULING PIPELINE ==========
     always @(posedge clk) begin
-<<<<<<< HEAD
-        if (state == RUN_ROUNDS && round >= 16 && round <= 62) begin
-            W[round+1] <= W_pipe1 + W_pipe2;  // Tính cho round tiếp theo
-        end
-    end
-    
-    // ========== ROUND COMPUTATION (FIXED) ==========
-=======
         if (state == RUN_ROUNDS) begin
           // vd W_pipe1, W_pipe2 duoc tinh truoc 1, vd round nay la 16 thi
           // round cycle truoc la rounfd = 15, su dung round = 15 
@@ -298,40 +215,12 @@ module sha256_round_scheduler_include (
     end
 
 
-
-    // ========== ROUND COMPUTATION PIPELINE ==========
-    // ... (giữ nguyên pipeline 3 stage từ code trước)
->>>>>>> 134c46cdf883fd65b9325f518ec8954a111f359e
     reg [31:0] T1_stage1, T1_stage2, T2_stage1;
     reg [31:0] sigma0_a, sigma1_e, ch_efg, maj_abc;
     reg [5:0] round_delayed;  // delay 1 cycle để đồng bộ với W
     
     always @(posedge clk) begin
         if (state == RUN_ROUNDS) begin
-<<<<<<< HEAD
-            // Stage 1: Tính sigma và ch/maj từ giá trị hiện tại
-            sigma0_a <= sigma_upper_0(a);
-            sigma1_e <= sigma_upper_1(e);
-            ch_efg   <= ch(e, f, g);
-            maj_abc  <= maj(a, b, c);
-            round_delayed <= round;  // lưu round để dùng ở stage sau
-        end
-    end
-    
-    always @(posedge clk) begin
-        if (state == RUN_ROUNDS) begin
-            // Stage 2: Tính T1_partial và T2
-            T1_stage1 <= h + sigma1_e + ch_efg;
-            T2_stage1 <= sigma0_a + maj_abc;
-        end
-    end
-    
-    always @(posedge clk) begin
-        if (state == RUN_ROUNDS) begin
-            // Stage 3: Hoàn thành T1 và cập nhật thanh ghi
-            T1_stage2 <= T1_stage1 + K[round_delayed] + W[round_delayed];
-            
-=======
             // Stage 1: Tính intermediate values
             // vd trong cycle truoc, round = 1, round_use = 0 >= 0
             sigma0_a <= sigma0(a);
@@ -354,7 +243,7 @@ module sha256_round_scheduler_include (
             
             // Stage 4: Cập nhật thanh ghi a-h (dùng T1_stage2 và T2_stage1 từ cycle trước)
             // a = T1 (round_use )
->>>>>>> 134c46cdf883fd65b9325f518ec8954a111f359e
+
             a <= T1_stage2 + T2_stage1;
             b <= a;
             c <= b;
@@ -365,9 +254,4 @@ module sha256_round_scheduler_include (
             h <= g;
         end
     end
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> 134c46cdf883fd65b9325f518ec8954a111f359e
 endmodule
