@@ -31,7 +31,6 @@ module sha256_round_computation (
   wire [31:0] Kt;  // Round constant for this round
   wire [31:0] choice, major, sigma_upper_1, sigma_upper_0, T1, T2;  // Intermediate values
 
-
   // Generate message schedule words using sha_256_message_scheduler
   sha256_message_scheduler msg_sched (
       .clk(clk),
@@ -98,15 +97,15 @@ module sha256_round_computation (
         PS <= NS;  // Update state
         case (PS)
           IDLE: begin
-            rounds_done<=0;
-              a <= H0;
-              b <= H1;
-              c <= H2;
-              d <= H3;
-              e <= H4;
-              f <= H5;
-              g <= H6;
-              h <= H7;
+                rounds_done<=0;
+                  a <= H0;
+                  b <= H1;
+                  c <= H2;
+                  d <= H3;
+                  e <= H4;
+                  f <= H5;
+                  g <= H6;
+                  h <= H7;
           end
            ROUNDS: begin
               if (round_index < 64) begin
@@ -132,7 +131,6 @@ module sha256_round_computation (
           endcase
         end
       end
-
 
   // Combinational Logic: Next State Logic
   always @(*) begin

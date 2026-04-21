@@ -3,7 +3,7 @@ module sha256_message_padding (
     input              rst_n,        //reset active low
     input              input_start,  //bat dau nhap
     input              input_done,   //nhap xong
-    input      [  5:0] inp_data,     //input
+    input      [  7:0] inp_data,     //input
     output reg [511:0] padded_msg,   //msg da pad xong      
     output reg         padding_done  //co bao da pad xong
 );

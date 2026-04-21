@@ -30,19 +30,72 @@ module sha256_round_scheduler_include (
     reg [31:0] W [0:63];
     // W_pipe tinh truoc gia tri cho W[data]
     reg [31:0] W_pipe1, W_pipe2;
-    reg [5:0] round_use;
     
-    // ========== CONSTANTS (giữ nguyên) ==========
+    // ========== CONSTANTS ==========
     (* ramstyle = "M9K" *) reg [31:0] K [0:63];
+
     initial begin
-        // ... (64 giá trị K như cũ)
-        K[0] = 32'h428a2f98; K[1] = 32'h71374491; // ... đầy đủ
-        K[63]= 32'hc67178f2;
+        K[0]  = 32'h428a2f98; K[1]  = 32'h71374491; K[2]  = 32'hb5c0fbcf; K[3]  = 32'he9b5dba5;
+        K[4]  = 32'h3956c25b; K[5]  = 32'h59f111f1; K[6]  = 32'h923f82a4; K[7]  = 32'hab1c5ed5;
+        K[8]  = 32'hd807aa98; K[9]  = 32'h12835b01; K[10] = 32'h243185be; K[11] = 32'h550c7dc3;
+        K[12] = 32'h72be5d74; K[13] = 32'h80deb1fe; K[14] = 32'h9bdc06a7; K[15] = 32'hc19bf174;
+        K[16] = 32'he49b69c1; K[17] = 32'hefbe4786; K[18] = 32'h0fc19dc6; K[19] = 32'h240ca1cc;
+        K[20] = 32'h2de92c6f; K[21] = 32'h4a7484aa; K[22] = 32'h5cb0a9dc; K[23] = 32'h76f988da;
+        K[24] = 32'h983e5152; K[25] = 32'ha831c66d; K[26] = 32'hb00327c8; K[27] = 32'hbf597fc7;
+        K[28] = 32'hc6e00bf3; K[29] = 32'hd5a79147; K[30] = 32'h06ca6351; K[31] = 32'h14292967;
+        K[32] = 32'h27b70a85; K[33] = 32'h2e1b2138; K[34] = 32'h4d2c6dfc; K[35] = 32'h53380d13;
+        K[36] = 32'h650a7354; K[37] = 32'h766a0abb; K[38] = 32'h81c2c92e; K[39] = 32'h92722c85;
+        K[40] = 32'ha2bfe8a1; K[41] = 32'ha81a664b; K[42] = 32'hc24b8b70; K[43] = 32'hc76c51a3;
+        K[44] = 32'hd192e819; K[45] = 32'hd6990624; K[46] = 32'hf40e3585; K[47] = 32'h106aa070;
+        K[48] = 32'h19a4c116; K[49] = 32'h1e376c08; K[50] = 32'h2748774c; K[51] = 32'h34b0bcb5;
+        K[52] = 32'h391c0cb3; K[53] = 32'h4ed8aa4a; K[54] = 32'h5b9cca4f; K[55] = 32'h682e6ff3;
+        K[56] = 32'h748f82ee; K[57] = 32'h78a5636f; K[58] = 32'h84c87814; K[59] = 32'h8cc70208;
+        K[60] = 32'h90befffa; K[61] = 32'ha4506ceb; K[62] = 32'hbef9a3f7; K[63] = 32'hc67178f2;
     end
-    
-    // ========== HÀM LOGIC (sigma, ch, maj) ==========
-    // ... (giữ nguyên các function từ code trước)
-    // chua co function, can cap nhat
+
+    // ========== HÀM LOGIC ==========
+    function [31:0] maj;
+        input [31:0] a, b, c;
+        begin
+            maj = (a & b) ^ (a & c) ^ (b & c);
+        end
+    endfunction
+
+    function [31:0] ch;
+        input [31:0] e, f, g;
+        begin
+            ch = (e & f) ^ (~e & g);
+        end
+    endfunction
+
+    function [31:0] sigma_lower_0;
+        input [31:0] x;
+        begin
+            sigma_lower_0 = {x[6:0], x[31:7]} ^ {x[17:0], x[31:18]} ^ (x >> 3);
+        end
+    endfunction
+
+    function [31:0] sigma_lower_1;
+        input [31:0] x;
+        begin
+            sigma_lower_1 = {x[16:0], x[31:17]} ^ {x[18:0], x[31:19]} ^ (x >> 10);
+        end
+    endfunction
+
+    function [31:0] sigma_upper_0;
+        input [31:0] x;
+        begin
+            sigma_upper_0 = {x[1:0], x[31:2]} ^ {x[12:0], x[31:13]} ^ {x[21:0], x[31:22]};
+        end
+    endfunction
+
+    function [31:0] sigma_upper_1;
+        input [31:0] x;
+        begin
+            sigma_upper_1 = {x[5:0], x[31:6]} ^ {x[10:0], x[31:11]} ^ {x[24:0], x[31:25]};
+        end
+    endfunction
+
     
     // ========== FSM: NEXT STATE ==========
     always @(*) begin
@@ -50,7 +103,6 @@ module sha256_round_scheduler_include (
         case (state)
             IDLE: 
                 if (start) next_state = LOAD_IV;
-                
             LOAD_IV: 
                 next_state = RUN_ROUNDS;
                 
@@ -76,6 +128,8 @@ module sha256_round_scheduler_include (
             round <= 0;
             ready_for_next_block <= 0;
             hash_valid <= 0;
+            current_hash <= 256'h0;
+            final_hash <= 256'h0;
         end else begin
             state <= next_state;
             
@@ -122,7 +176,6 @@ module sha256_round_scheduler_include (
                 end
                 
                 UPDATE_HASH: begin
-                    // Cộng dồn: new_hash = old_hash + state_after_rounds
                     current_hash <= {a_old, b_old, c_old, d_old, e_old, f_old, g_old, h_old}
                                    + {a, b, c, d, e, f, g, h};
                     
@@ -162,11 +215,9 @@ module sha256_round_scheduler_include (
     end
 
 
-
-    // ========== ROUND COMPUTATION PIPELINE ==========
-    // ... (giữ nguyên pipeline 3 stage từ code trước)
     reg [31:0] T1_stage1, T1_stage2, T2_stage1;
     reg [31:0] sigma0_a, sigma1_e, ch_efg, maj_abc;
+    reg [5:0] round_delayed;  // delay 1 cycle để đồng bộ với W
     
     always @(posedge clk) begin
         if (state == RUN_ROUNDS) begin
@@ -192,6 +243,7 @@ module sha256_round_scheduler_include (
             
             // Stage 4: Cập nhật thanh ghi a-h (dùng T1_stage2 và T2_stage1 từ cycle trước)
             // a = T1 (round_use )
+
             a <= T1_stage2 + T2_stage1;
             b <= a;
             c <= b;
@@ -202,5 +254,4 @@ module sha256_round_scheduler_include (
             h <= g;
         end
     end
-
 endmodule
