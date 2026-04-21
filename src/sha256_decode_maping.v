@@ -1,5 +1,5 @@
 module sha256_decode_mapping (
-    input [5:0] inp_data,
+    input [7:0] inp_data,
     output reg [7:0] ascii_out
 );
   always @(*) begin
