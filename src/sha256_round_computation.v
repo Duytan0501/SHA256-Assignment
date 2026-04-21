@@ -15,7 +15,6 @@ module sha256_round_computation (
   localparam ROUNDS = 2'd1;
   localparam FINAL = 2'd2;
 
-
   reg [1:0] PS, NS;
 
   // Initial hash values
