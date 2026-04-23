@@ -7,7 +7,6 @@ module sha256_top(
     output     [255:0] hash,
     output             hash_valid  
 );
-
     wire [511:0] padded_msg;
     wire         padding_done;
     wire         ready_for_next_block;  // Thêm wire này
@@ -30,7 +29,7 @@ module sha256_top(
         .start(padding_done),           // Bắt đầu khi padding xong
         .message_block(padded_msg),     // Block 512-bit từ padding
         .last_block(1'b1),              // Top-level chỉ xử lý 1 block (message ngắn)
-        .hash(hash),                    // Hash cuối cùng
+        .final_hash(hash),                    // Hash cuối cùng
         .hash_valid(hash_valid),        // Valid signal
         .ready_for_next_block(ready_for_next_block)  // Không dùng ở top
     );
